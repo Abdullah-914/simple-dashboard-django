@@ -1,0 +1,189 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Dashboard - Overview{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Overview</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProjectModal">
+        <i class="bi bi-plus-lg me-1"></i>New Project
+    </button>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card p-3">
+            <div class="d-flex align-items-center">
+                <div class="icon-box bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-folder"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="text-muted small">Total Projects</div>
+                    <div class="fs-4 fw-bold">{{ total_projects }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card p-3">
+            <div class="d-flex align-items-center">
+                <div class="icon-box bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="text-muted small">Completed</div>
+                    <div class="fs-4 fw-bold">{{ completed_projects }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card p-3">
+            <div class="d-flex align-items-center">
+                <div class="icon-box bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-list-task"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="text-muted small">Pending Tasks</div>
+                    <div class="fs-4 fw-bold">{{ pending_tasks }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card p-3">
+            <div class="d-flex align-items-center">
+                <div class="icon-box bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="text-muted small">Completion Rate</div>
+                    <div class="fs-4 fw-bold">{{ task_completion_rate }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Projects List -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0">Projects</h5>
+            </div>
+            <div class="card-body px-4">
+                {% if projects %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="text-muted small">
+                            <tr>
+                                <th>Project</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Tasks</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in projects %}
+                            <tr>
+                                <td class="fw-semibold">{{ project.name }}</td>
+                                <td>
+                                    {% if project.status == "active" %}
+                                        <span class="badge bg-primary">Active</span>
+                                    {% elif project.status == "completed" %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">On Hold</span>
+                                    {% endif %}
+                                </td>
+                                <td style="min-width: 120px;">
+                                    <div class="progress">
+                                        <div class="progress-bar bg-primary" style="width: {{ project.progress }}%"></div>
+                                    </div>
+                                    <small class="text-muted">{{ project.progress }}%</small>
+                                </td>
+                                <td>{{ project.tasks.count }}</td>
+                                <td>
+                                    <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-folder2-open fs-1 d-block mb-2"></i>
+                    No projects yet. Create one to get started!
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0">Recent Activity</h5>
+            </div>
+            <div class="card-body px-4">
+                {% if recent_activities %}
+                    {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <div class="d-flex align-items-start">
+                            <i class="{{ activity.icon }} text-primary me-2 mt-1"></i>
+                            <div>
+                                <div class="small">{{ activity.description }}</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">
+                                    {{ activity.timestamp|timesince }} ago
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
+                        No activity yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Project Modal -->
+<div class="modal fade" id="addProjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <form method="post" action="{% url 'dashboard:add_project' %}">
+                {% csrf_token %}
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">New Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Project Name</label>
+                        <input type="text" name="name" class="form-control" required maxlength="200">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" maxlength="1000"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
