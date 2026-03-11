@@ -160,9 +160,6 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Frontend build directory (React production build)
-FRONTEND_DIR = BASE_DIR / "staticfiles" / "frontend"
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ── Django REST Framework ──

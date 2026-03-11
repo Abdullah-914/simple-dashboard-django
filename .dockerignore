@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 *.pyo
 db.sqlite3
-frontend/node_modules/
+frontend/
 .vscode/
 *.md
+staticfiles/

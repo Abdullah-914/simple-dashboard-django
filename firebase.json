@@ -1,0 +1,24 @@
+{
+  "hosting": {
+    "public": "frontend/dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": { "serviceId": "team-task-manager", "region": "us-central1" }
+      },
+      {
+        "source": "/admin/**",
+        "run": { "serviceId": "team-task-manager", "region": "us-central1" }
+      },
+      {
+        "source": "/static/**",
+        "run": { "serviceId": "team-task-manager", "region": "us-central1" }
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
