@@ -12,11 +12,15 @@ npm ci
 npm run build
 cd ..
 
-# 3. Collect Django static files (includes React build via whitenoise)
+# 3. Copy React index.html to a Django templates directory
+mkdir -p templates
+cp frontend/dist/index.html templates/index.html
+
+# 4. Collect Django static files (includes React build via whitenoise)
 python manage.py collectstatic --noinput
 
-# 4. Run database migrations
+# 5. Run database migrations
 python manage.py migrate --noinput
 
-# 5. Create superuser (only on first deploy, silently skips if exists)
+# 6. Create superuser (only on first deploy, silently skips if exists)
 python manage.py createsuperuser --noinput 2>/dev/null || true

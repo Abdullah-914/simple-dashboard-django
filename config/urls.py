@@ -26,8 +26,7 @@ urlpatterns = [
 ]
 
 # In production, serve React SPA for all non-API/admin/dashboard routes
-if not settings.DEBUG and settings.FRONTEND_DIR.exists():
-    settings.TEMPLATES[0]["DIRS"].append(settings.FRONTEND_DIR)
+if not settings.DEBUG:
     urlpatterns += [
         path("dashboard/", include("dashboard.urls")),
         re_path(
