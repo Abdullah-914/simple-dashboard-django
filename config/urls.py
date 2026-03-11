@@ -16,10 +16,23 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.conf import settings
+from django.views.generic import TemplateView
+from django.http import FileResponse
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("", include("dashboard.urls")),
 ]
+
+# In production, serve the React frontend build for all other routes
+if not settings.DEBUG and settings.FRONTEND_DIR.exists():
+    def serve_react(request, path=""):
+        index = settings.FRONTEND_DIR / "index.html"
+        return FileResponse(open(index, "rb"), content_type="text/html")
+
+    urlpatterns += [
+        re_path(r"^(?!admin|api|dashboard).*$", serve_react),
+    ]
