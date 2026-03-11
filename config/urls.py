@@ -23,16 +23,20 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
-    path("", include("dashboard.urls")),
 ]
 
-# Serve React SPA for all non-API/admin routes in production
+# In production, serve React SPA for all non-API/admin/dashboard routes
 if not settings.DEBUG and settings.FRONTEND_DIR.exists():
+    settings.TEMPLATES[0]["DIRS"].append(settings.FRONTEND_DIR)
     urlpatterns += [
+        path("dashboard/", include("dashboard.urls")),
         re_path(
             r"^(?!api/|admin/|static/|dashboard/).*$",
             TemplateView.as_view(template_name="index.html"),
         ),
     ]
-    # Tell Django to find index.html in the frontend dist folder
-    settings.TEMPLATES[0]["DIRS"].append(settings.FRONTEND_DIR)
+else:
+    # In dev, show Django dashboard at root
+    urlpatterns += [
+        path("", include("dashboard.urls")),
+    ]
