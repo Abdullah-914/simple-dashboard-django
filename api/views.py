@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.db.models import Q
 from django.middleware.csrf import get_token
@@ -222,4 +224,37 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
         user_teams = Team.objects.filter(memberships__user=self.request.user)
         return Task.objects.filter(team__in=user_teams).select_related(
             "assigned_to", "created_by", "team"
+        )
+
+
+# ──────────────────── Bonus Views ────────────────────
+
+
+class DueTasksReminderView(APIView):
+    """Return tasks due today or overdue for the logged-in user."""
+
+    def get(self, request):
+        today = date.today()
+        tasks = Task.objects.filter(
+            assigned_to=request.user,
+            due_date__lte=today,
+        ).exclude(status="done").select_related("team")
+        return Response(TaskSerializer(tasks, many=True).data)
+
+
+class InviteMemberView(APIView):
+    """Stubbed email invite — logs intent but does not send email."""
+
+    def post(self, request, pk):
+        team = generics.get_object_or_404(
+            Team.objects.filter(memberships__user=request.user), pk=pk
+        )
+        email = request.data.get("email", "").strip()
+        if not email:
+            return Response(
+                {"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        # Stub: In production, send an actual email here.
+        return Response(
+            {"detail": f"Invitation stub: would send invite to {email} for team '{team.name}'."}
         )

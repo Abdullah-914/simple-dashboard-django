@@ -20,4 +20,7 @@ urlpatterns = [
     # Tasks
     path("tasks/", views.TaskListCreateView.as_view(), name="task-list"),
     path("tasks/<int:pk>/", views.TaskDetailView.as_view(), name="task-detail"),
+    # Bonus
+    path("tasks/reminders/", views.DueTasksReminderView.as_view(), name="task-reminders"),
+    path("teams/<int:pk>/invite/", views.InviteMemberView.as_view(), name="team-invite"),
 ]
