@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 
+import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -30,6 +32,11 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
+# Auto-detect Render hostname
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
@@ -81,10 +88,15 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-# Production: PostgreSQL on Google Cloud SQL
+# Production: PostgreSQL via DATABASE_URL (Render provides this)
 # Dev fallback: SQLite
 
-if os.environ.get("DATABASE_URL") or os.environ.get("DB_NAME"):
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {"default": dj_database_url.parse(DATABASE_URL)}
+    SESSION_ENGINE = "django.contrib.sessions.backends.db"
+elif os.environ.get("DB_NAME"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -160,6 +172,10 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# React frontend build output (built by Vite into this folder)
+FRONTEND_DIR = BASE_DIR / "frontend" / "dist"
+STATICFILES_DIRS = [FRONTEND_DIR] if FRONTEND_DIR.exists() else []
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ── Django REST Framework ──
@@ -180,6 +196,8 @@ _CORS_ORIGINS = [
 _extra_origin = os.environ.get("CORS_ALLOWED_ORIGIN")
 if _extra_origin:
     _CORS_ORIGINS.append(_extra_origin)
+if RENDER_EXTERNAL_HOSTNAME:
+    _CORS_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 CORS_ALLOWED_ORIGINS = _CORS_ORIGINS
 CORS_ALLOW_CREDENTIALS = True
 
@@ -191,6 +209,8 @@ _CSRF_ORIGINS = [
 _extra_csrf = os.environ.get("CSRF_TRUSTED_ORIGIN")
 if _extra_csrf:
     _CSRF_ORIGINS.append(_extra_csrf)
+if RENDER_EXTERNAL_HOSTNAME:
+    _CSRF_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 CSRF_TRUSTED_ORIGINS = _CSRF_ORIGINS
 
 # ── Session cookie ──

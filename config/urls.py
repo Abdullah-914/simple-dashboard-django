@@ -16,10 +16,23 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.conf import settings
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("", include("dashboard.urls")),
 ]
+
+# Serve React SPA for all non-API/admin routes in production
+if not settings.DEBUG and settings.FRONTEND_DIR.exists():
+    urlpatterns += [
+        re_path(
+            r"^(?!api/|admin/|static/|dashboard/).*$",
+            TemplateView.as_view(template_name="index.html"),
+        ),
+    ]
+    # Tell Django to find index.html in the frontend dist folder
+    settings.TEMPLATES[0]["DIRS"].append(settings.FRONTEND_DIR)
