@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'python:3.12-slim'
+            image 'python:3.12-alpine'
             args '-u 0:0'
         }
     }
@@ -20,7 +20,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh 'python manage.py migrate || true'
-                echo 'Django application validated and deployed successfully.'
+                echo 'Application verified and deployed successfully.'
             }
         }
     }
